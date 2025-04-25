@@ -2,18 +2,25 @@ $linuxUser = "azur1"
 $linuxPassword = "YourSecurePassword123!" | ConvertTo-SecureString -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential ($linuxUser, $linuxPassword)
 $location = "uksouth"
-$resourceGroupName = "mate-azure-task-11"
+$resourceGroupName = "mate-azure-task-113"
 $networkSecurityGroupName = "defaultnsg"
 $virtualNetworkName = "vnet"
 $subnetName = "default"
 $vnetAddressPrefix = "10.0.0.0/16"
 $subnetAddressPrefix = "10.0.0.0/24"
 $sshKeyName = "linuxboxsshkey"
-$sshKeyPublicKey = Get-Content "~/.ssh/id_rsa.pub" 
 $vmName = "matebox"
 $vmImage = "Ubuntu2204"
 $vmSize = "Standard_B1s"
 $availabilitySetName = "mateavalset"
+
+if (-not (Test-Path "$HOME\.ssh\$linuxUser.pub")) {
+    Write-Host "SSH-ключ не найден. Генерируем новый..." -ForegroundColor Cyan
+    ssh-keygen -t rsa -b 4096 -f "$HOME\.ssh\$linuxUser" -N "" | Out-Null
+}
+
+$sshKeyPublicKey = (Get-Content "$HOME\.ssh\$linuxUser.pub" -Raw).Trim()
+
 
 Write-Host "Creating a resource group $resourceGroupName ..." -ForegroundColor Cyan
 New-AzResourceGroup -Name $resourceGroupName -Location $location
@@ -50,5 +57,6 @@ for (($zone = 1); ($zone -le 2); ($zone++) ) {
     -SecurityGroupName $networkSecurityGroupName `
     -Credential $credential `
     -AvailabilitySetName $availabilitySetName `
-    -SshKeyName $sshKeyName
+    -SshKeyName $sshKeyName `
+    -SshKeyValues =  $sshKeyPublicKey
 }
