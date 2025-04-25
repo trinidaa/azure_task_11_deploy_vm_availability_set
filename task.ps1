@@ -58,5 +58,5 @@ for (($zone = 1); ($zone -le 2); ($zone++) ) {
     -Credential $credential `
     -AvailabilitySetName $availabilitySetName `
     -SshKeyName $sshKeyName `
-    -SshKeyValues =  $sshKeyPublicKey
+    -SshKeyValues $sshKeyPublicKey
 }
